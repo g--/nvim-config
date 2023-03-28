@@ -13,21 +13,6 @@ local packer_bootstrap = ensure_packer()
 
 vim.cmd [[packadd packer.nvim]]
 
-util = require "lspconfig/util"
-require('lspconfig').gopls.setup{
-  cmd = {"gopls", "serve"},
-  filetypes = {"go", "gomod"},
-  root_dir = util.root_pattern("go.work", "go.mod", ".git"),
-  settings = {
-    gopls = {
-      analyses = {
-        unusedparams = true,
-      },
-      staticcheck = true,
-    },
-  },
-}
-
 return require('packer').startup(function(use)
   -- Packer can manage itself
   use 'wbthomason/packer.nvim'
@@ -46,8 +31,28 @@ return require('packer').startup(function(use)
   }
 
 
-use { 'junegunn/fzf', run = ":call fzf#install()" }
-use { 'junegunn/fzf.vim' }
+  use { 'junegunn/fzf', run = ":call fzf#install()" }
+  use { 'junegunn/fzf.vim' }
+
+  util = require "lspconfig/util"
+  require('lspconfig').gopls.setup{
+    cmd = {"gopls", "serve"},
+    filetypes = {"go", "gomod"},
+    root_dir = util.root_pattern("go.work", "go.mod", ".git"),
+    settings = {
+      gopls = {
+        analyses = {
+          unusedparams = true,
+        },
+        staticcheck = true,
+      },
+    },
+  }
+
+
+  if packer_bootstrap then
+    require('packer').sync()
+  end
 end)
 
 
