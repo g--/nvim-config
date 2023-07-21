@@ -12,6 +12,7 @@ end
 local packer_bootstrap = ensure_packer()
 
 vim.cmd [[packadd packer.nvim]]
+vim.g.fzf_action = { enter= 'tab split' }
 
 return require('packer').startup(function(use)
   -- Packer can manage itself
@@ -24,6 +25,7 @@ return require('packer').startup(function(use)
   use 'nvim-lua/completion-nvim'
   use 'anott03/nvim-lspinstall'
   use 'ryanoasis/vim-devicons'
+  use 'mfussenegger/nvim-jdtls'
 
   use {
       'ruifm/gitlinker.nvim',
@@ -32,7 +34,10 @@ return require('packer').startup(function(use)
 
 
   use { 'junegunn/fzf', run = ":call fzf#install()" }
-  use { 'junegunn/fzf.vim' }
+  use { 'junegunn/fzf.vim',
+    --  optional for icon support
+    requires = { "nvim-tree/nvim-web-devicons" }
+  }
 
   util = require "lspconfig/util"
   require('lspconfig').gopls.setup{
@@ -54,6 +59,4 @@ return require('packer').startup(function(use)
     require('packer').sync()
   end
 end)
-
-
 

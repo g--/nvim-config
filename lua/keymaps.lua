@@ -7,12 +7,17 @@ function map(mode, lhs, rhs, opts)
     vim.api.nvim_set_keymap(mode, lhs, rhs, options)
 end
 
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+
 
 vim.g.mapleader = ' '
 map("n", "t", ":Files<CR>")
 map("", "<leader>p", ":Files<CR>")
 map("", "<leader><space>", ":Buffers<CR>")
 map("", "<leader>g", ":Rg<CR>")
+map("", "gp", ":tabprevious<CR>")
+map("", "gn", ":tabnext<CR>")
 
  -- Mappings.
   -- See `:help vim.lsp.*` for documentation on any of the below functions
