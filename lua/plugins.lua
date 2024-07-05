@@ -39,6 +39,11 @@ return require('packer').startup(function(use)
     requires = { "nvim-tree/nvim-web-devicons" }
   }
 
+  -- ideas:
+  --   nvim-tree/nvim-tree.lua
+  --   nvim-tree/nvim-web-devicons.lua
+  --   nvim-lualine/lualine.nvim
+
   util = require "lspconfig/util"
   require('lspconfig').gopls.setup{
     cmd = {"gopls", "serve"},
@@ -51,6 +56,13 @@ return require('packer').startup(function(use)
         },
         staticcheck = true,
       },
+    },
+  }
+  require('lspconfig').terraformls.setup{
+    cmd = {"terraform-ls", "serve"},
+    filetypes = {"terraform", "hcl"},
+    root_dir = util.root_pattern(".terraform", ".git"),
+    settings = {
     },
   }
 
