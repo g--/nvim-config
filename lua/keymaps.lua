@@ -11,7 +11,8 @@ vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt_local.spelllang='en_ca'
 
-vim.g.mapleader = ' '
+-- vim.g.mapleader = ' '
+--
 map("n", "t", ":Files<CR>")
 map("", "<leader>p", ":Files<CR>")
 map("", "<leader><space>", ":Buffers<CR>")

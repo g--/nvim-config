@@ -1,74 +1,91 @@
-local ensure_packer = function()
-  local fn = vim.fn
-  local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-  if fn.empty(fn.glob(install_path)) > 0 then
-    fn.system({'git', 'clone', '--depth', '1', 'https://github.com/wbthomason/packer.nvim', install_path})
-    vim.cmd [[packadd packer.nvim]]
-    return true
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+  if vim.v.shell_error ~= 0 then
+    vim.api.nvim_echo({
+      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+      { out, "WarningMsg" },
+      { "\nPress any key to exit..." },
+    }, true, {})
+    vim.fn.getchar()
+    os.exit(1)
   end
-  return false
 end
+vim.opt.rtp:prepend(lazypath)
 
-local packer_bootstrap = ensure_packer()
+-- Make sure to setup `mapleader` and `maplocalleader` before
+-- loading lazy.nvim so that mappings are correct.
+-- This is also a good place to setup other settings (vim.opt)
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
 
-vim.cmd [[packadd packer.nvim]]
-vim.g.fzf_action = { enter= 'tab split' }
+-- vim.cmd [[packadd packer.nvim]]
+-- vim.g.fzf_action = { enter= 'tab split' }
 
-return require('packer').startup(function(use)
-  -- Packer can manage itself
-  use 'wbthomason/packer.nvim'
+require('lazy').setup({
+  'nvim-treesitter/nvim-treesitter',
+  {'prettier/vim-prettier', build = 'yarn install' },
+  {
+    'maxmx03/solarized.nvim',
+    lazy = false,
+    priority = 1000,
+    config = function()
+      vim.o.background = 'light' -- or 'light'
 
-  use 'nvim-treesitter/nvim-treesitter'
-  use {'prettier/vim-prettier', run = 'yarn install' }
+      vim.cmd.colorscheme 'solarized'
+    end,
+  },
+  {
+	  	 'neovim/nvim-lspconfig',
+		 config = function()
+            util = require "lspconfig/util"
+			require('lspconfig').gopls.setup{
+			  cmd = {"gopls", "serve"},
+			  filetypes = {"go", "gomod"},
+			  root_dir = util.root_pattern("go.work", "go.mod", ".git"),
+			  settings = {
+			    gopls = {
+			      analyses = {
+			        unusedparams = true,
+			      },
+			      staticcheck = true,
+			    },
+			  },
+			}
+			require('lspconfig').terraformls.setup{
+			  cmd = {"terraform-ls", "serve"},
+			  filetypes = {"terraform", "hcl"},
+			  root_dir = util.root_pattern(".terraform", ".git"),
+			  settings = {
+		  },
+			}
+		end,
+  },
+  'nvim-lua/completion-nvim',
+  'anott03/nvim-lspinstall',
+  'ryanoasis/vim-devicons',
+  'mfussenegger/nvim-jdtls',
 
-  use 'neovim/nvim-lspconfig'
-  use 'nvim-lua/completion-nvim'
-  use 'anott03/nvim-lspinstall'
-  use 'ryanoasis/vim-devicons'
-  use 'mfussenegger/nvim-jdtls'
-
-  use {
+  {
       'ruifm/gitlinker.nvim',
-      requires = 'nvim-lua/plenary.nvim',
-  }
+      dependencies = 'nvim-lua/plenary.nvim',
+  },
 
 
-  use { 'junegunn/fzf', run = ":call fzf#install()" }
-  use { 'junegunn/fzf.vim',
+  { 'junegunn/fzf', build = ":call fzf#install()" },
+  { 'junegunn/fzf.vim',
     --  optional for icon support
-    requires = { "nvim-tree/nvim-web-devicons" }
-  }
+    dependencies = { "nvim-tree/nvim-web-devicons" }
+  },
 
   -- ideas:
   --   nvim-tree/nvim-tree.lua
   --   nvim-tree/nvim-web-devicons.lua
   --   nvim-lualine/lualine.nvim
 
-  util = require "lspconfig/util"
-  require('lspconfig').gopls.setup{
-    cmd = {"gopls", "serve"},
-    filetypes = {"go", "gomod"},
-    root_dir = util.root_pattern("go.work", "go.mod", ".git"),
-    settings = {
-      gopls = {
-        analyses = {
-          unusedparams = true,
-        },
-        staticcheck = true,
-      },
-    },
-  }
-  require('lspconfig').terraformls.setup{
-    cmd = {"terraform-ls", "serve"},
-    filetypes = {"terraform", "hcl"},
-    root_dir = util.root_pattern(".terraform", ".git"),
-    settings = {
-    },
-  }
-
-
-  if packer_bootstrap then
-    require('packer').sync()
-  end
-end)
+  -- util = require "lspconfig/util"
+  --
+ 
+})
 
