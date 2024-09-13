@@ -21,7 +21,7 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
 -- vim.cmd [[packadd packer.nvim]]
--- vim.g.fzf_action = { enter= 'tab split' }
+vim.g.fzf_action = { enter= 'tab split' }
 
 require('lazy').setup({
   'nvim-treesitter/nvim-treesitter',
@@ -76,7 +76,40 @@ require('lazy').setup({
   { 'junegunn/fzf', build = ":call fzf#install()" },
   { 'junegunn/fzf.vim',
     --  optional for icon support
-    dependencies = { "nvim-tree/nvim-web-devicons" }
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+  },
+  {
+    "ibhagwan/fzf-lua",
+    -- optional for icon support
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      -- calling `setup` is optional for customization
+      local actions = require "fzf-lua.actions"
+      require("fzf-lua").setup({
+		  actions = {
+			  files = {
+                ["enter"]  = actions.file_switch_or_edit,
+                ["ctrl-s"] = actions.file_split,
+                ["ctrl-v"] = actions.file_vsplit,
+                ["ctrl-t"] = actions.file_tabedit,
+                ["alt-q"]  = actions.file_sel_to_qf,
+                ["alt-Q"]  = actions.file_sel_to_ll,
+			  }
+		  }
+	  })
+    end
+  },
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+	config = function ()
+		require('lualine').setup {
+			options = {
+				theme = 'solarized_light',
+			}
+		}
+	end,
+
   },
 
   -- ideas:

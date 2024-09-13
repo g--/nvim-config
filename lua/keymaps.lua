@@ -14,8 +14,10 @@ vim.opt_local.spelllang='en_ca'
 -- vim.g.mapleader = ' '
 --
 map("n", "t", ":Files<CR>")
-map("", "<leader>p", ":Files<CR>")
-map("", "<leader><space>", ":Buffers<CR>")
+-- map("", "<leader>p", ":Files<CR>")
+-- map("", "<leader><space>", ":Buffers<CR>")
+vim.keymap.set("", "<leader>p", function() require('fzf-lua').files() end)
+vim.keymap.set("", "<leader><space>", function() require('fzf-lua').buffers() end)
 map("", "<leader>g", ":Rg<CR>")
 map("", "gp", ":tabprevious<CR>")
 map("", "gn", ":tabnext<CR>")
