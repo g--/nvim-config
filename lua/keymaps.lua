@@ -22,6 +22,9 @@ map("", "<leader>g", ":Rg<CR>")
 map("", "gp", ":tabprevious<CR>")
 map("", "gn", ":tabnext<CR>")
 
+-- lookup
+map('', "gl", ':silent !open "https://www.google.com/search?q=<c-r>=expand("<cword>")<cr>"<CR>')
+
 -- TODO: open definition in new tab
 -- https://neovim.discourse.group/t/go-to-definition-in-new-tab/1552/3
 
@@ -37,6 +40,8 @@ map("", "gn", ":tabnext<CR>")
   vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
   vim.keymap.set('n', '<space>wl', function()
     print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+
+
   end, bufopts)
   vim.keymap.set('n', '<space>D', function() vim.lsp.buf.type_definition { reuse_win = true } end, bufopts)
   vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
