@@ -7,9 +7,17 @@ function map(mode, lhs, rhs, opts)
     vim.api.nvim_set_keymap(mode, lhs, rhs, options)
 end
 
+local HOME=os.getenv("HOME")
+local USERNAME=os.getenv("USER")
+
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt_local.spelllang='en_ca'
+vim.opt.spellfile = {
+	HOME .. "/.gsync/wordlist.en-ca.add",
+	HOME .. "/.esync/individual/" .. USERNAME .. "/wordlist.en-ca.add"
+}
+
 
 -- vim.g.mapleader = ' '
 --
