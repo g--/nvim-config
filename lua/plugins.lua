@@ -23,6 +23,27 @@ vim.g.maplocalleader = "\\"
 -- vim.cmd [[packadd packer.nvim]]
 vim.g.fzf_action = { enter= 'tab split' }
 
+vim.diagnostic.config({
+  underline = true,
+  virtual_text = false,
+
+  signs = true,
+  update_in_insert = false,
+  severity = true,
+  signs = {
+	text = {
+        [vim.diagnostic.severity.ERROR] = '‼️',
+        [vim.diagnostic.severity.WARN] = '⚠️',
+    },
+    linehl = {
+        [vim.diagnostic.severity.ERROR] = 'ErrorMsg',
+    },
+    numhl = {
+        [vim.diagnostic.severity.WARN] = 'WarningMsg',
+    },
+  },
+})
+
 require('lazy').setup({
   'nvim-treesitter/nvim-treesitter',
   {'prettier/vim-prettier', build = 'yarn install' },
@@ -36,31 +57,43 @@ require('lazy').setup({
       vim.cmd.colorscheme 'solarized'
     end,
   },
+
+  -- consider https://github.com/williamboman/mason.nvim
   {
-	  	 'neovim/nvim-lspconfig',
-		 config = function()
-            util = require "lspconfig/util"
-			require('lspconfig').gopls.setup{
-			  cmd = {"gopls", "serve"},
-			  filetypes = {"go", "gomod"},
-			  root_dir = util.root_pattern("go.work", "go.mod", ".git"),
-			  settings = {
-			    gopls = {
-			      analyses = {
-			        unusedparams = true,
-			      },
-			      staticcheck = true,
-			    },
-			  },
-			}
-			require('lspconfig').terraformls.setup{
-			  cmd = {"terraform-ls", "serve"},
-			  filetypes = {"terraform", "hcl"},
-			  root_dir = util.root_pattern(".terraform", ".git"),
-			  settings = {
+    'neovim/nvim-lspconfig',
+
+    config = function()
+      util = require "lspconfig/util"
+	  -- util.default_config = {
+	  -- }
+
+      require('lspconfig').gopls.setup{
+       cmd = {"gopls", "serve"},
+       filetypes = {"go", "gomod"},
+       root_dir = util.root_pattern("go.work", "go.mod", ".git"),
+       settings = {
+         gopls = {
+           analyses = {
+             unusedparams = true,
+           },
+           staticcheck = true,
+         },
+       },
+      }
+      require('lspconfig').terraformls.setup{
+        cmd = {"terraform-ls", "serve"},
+        filetypes = {"terraform", "hcl"},
+        root_dir = util.root_pattern(".terraform", ".git"),
+        settings = {
+        },
+      }
+      require('lspconfig').rust_analyzer.setup{
+		  -- Server-specific settings. See `:help lspconfig-setup`
+		  settings = {
+			['rust-analyzer'] = {},
 		  },
-			}
-		end,
+	  }
+    end,
   },
   'nvim-lua/completion-nvim',
   'anott03/nvim-lspinstall',
@@ -86,30 +119,36 @@ require('lazy').setup({
       -- calling `setup` is optional for customization
       local actions = require "fzf-lua.actions"
       require("fzf-lua").setup({
-		  actions = {
-			  files = {
+          actions = {
+              files = {
                 ["enter"]  = actions.file_switch_or_edit,
                 ["ctrl-s"] = actions.file_split,
                 ["ctrl-v"] = actions.file_vsplit,
                 ["ctrl-t"] = actions.file_tabedit,
                 ["alt-q"]  = actions.file_sel_to_qf,
                 ["alt-Q"]  = actions.file_sel_to_ll,
-			  }
-		  }
-	  })
+              }
+          }
+      })
     end
   },
   {
     'nvim-lualine/lualine.nvim',
     dependencies = { 'nvim-tree/nvim-web-devicons' },
-	config = function ()
-		require('lualine').setup {
-			options = {
-				theme = 'solarized_light',
-			}
-		}
-	end,
+    config = function ()
+        require('lualine').setup {
+            options = {
+                theme = 'solarized_light',
+            }
+        }
+    end,
 
+  },
+  {
+    "ray-x/lsp_signature.nvim",
+    event = "VeryLazy",
+    opts = {},
+    config = function(_, opts) require'lsp_signature'.setup(opts) end
   },
 
   -- ideas:
@@ -121,4 +160,5 @@ require('lazy').setup({
   --
  
 })
+
 

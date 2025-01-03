@@ -31,6 +31,8 @@ map("", "gp", ":tabprevious<CR>")
 map("", "gn", ":tabnext<CR>")
 
 -- lookup
+-- TODO: add &filetype to the query
+-- TODO: add 
 map('', "gl", ':silent !open "https://www.google.com/search?q=<c-r>=expand("<cword>")<cr>"<CR>')
 
 -- TODO: open definition in new tab
