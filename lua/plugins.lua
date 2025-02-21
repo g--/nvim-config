@@ -20,9 +20,6 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
--- vim.cmd [[packadd packer.nvim]]
-vim.g.fzf_action = { enter= 'tab split' }
-
 vim.diagnostic.config({
   underline = true,
   virtual_text = false,
@@ -103,13 +100,6 @@ require('lazy').setup({
   {
       'ruifm/gitlinker.nvim',
       dependencies = 'nvim-lua/plenary.nvim',
-  },
-
-
-  { 'junegunn/fzf', build = ":call fzf#install()" },
-  { 'junegunn/fzf.vim',
-    --  optional for icon support
-    dependencies = { "nvim-tree/nvim-web-devicons" },
   },
   {
     "ibhagwan/fzf-lua",

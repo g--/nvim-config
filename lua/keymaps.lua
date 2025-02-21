@@ -10,6 +10,8 @@ end
 local HOME=os.getenv("HOME")
 local USERNAME=os.getenv("USER")
 
+vim.opt.scl = 'yes'
+
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt_local.spelllang='en_ca'
@@ -26,13 +28,15 @@ map("n", "t", ":Files<CR>")
 -- map("", "<leader><space>", ":Buffers<CR>")
 vim.keymap.set("", "<leader>p", function() require('fzf-lua').files() end)
 vim.keymap.set("", "<leader><space>", function() require('fzf-lua').buffers() end)
-map("", "<leader>g", ":Rg<CR>")
+vim.keymap.set("", "<leader>g", function() require('fzf-lua').grep() end)
 map("", "gp", ":tabprevious<CR>")
 map("", "gn", ":tabnext<CR>")
 
 -- lookup
 -- TODO: add &filetype to the query
--- TODO: add 
+--   what is lua "echo"? to test interpolation?
+--   is there a lua console in nvim?
+--
 map('', "gl", ':silent !open "https://www.google.com/search?q=<c-r>=expand("<cword>")<cr>"<CR>')
 
 -- TODO: open definition in new tab
@@ -50,9 +54,10 @@ map('', "gl", ':silent !open "https://www.google.com/search?q=<c-r>=expand("<cwo
   vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
   vim.keymap.set('n', '<space>wl', function()
     print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-
-
   end, bufopts)
+
+  vim.keymap.set('n', '<leader>e', function () vim.diagnostic.open_float() end, bufopts)
+
   vim.keymap.set('n', '<space>D', function() vim.lsp.buf.type_definition { reuse_win = true } end, bufopts)
   vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
   vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
