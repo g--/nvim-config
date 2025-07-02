@@ -157,12 +157,20 @@ require('lazy').setup({
     event = "VeryLazy",
     version = false, -- Never set this value to "*"! Never!
     opts = {
-      -- add any opts here
-      -- for example
-      provider = "ollama",
+      provider = "copilot",
+	  --
+      -- provider = "ollama",
       ollama = {
-        model = "qwen2.5",
-      }
+       model = "qwen2.5",
+      },
+
+	  mappings = {
+		submit = {
+		  normal = "<CR>",
+		  -- command-enter on the mac
+		  insert = "<C-CR>",
+		},
+	  },
     },
     -- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
     build = "make",
@@ -178,7 +186,86 @@ require('lazy').setup({
       "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
       "ibhagwan/fzf-lua", -- for file_selector provider fzf
       "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
-      "zbirenbaum/copilot.lua", -- for providers='copilot'
+	  {
+		"zbirenbaum/copilot.lua",
+        event = "VeryLazy",
+        opts = {
+		  panel = {
+			enabled = true,
+			auto_refresh = false,
+			keymap = {
+			  jump_prev = "[[",
+			  jump_next = "]]",
+			  accept = "<CR>",
+			  refresh = "gr",
+			  open = "<M-CR>"
+			},
+			layout = {
+			  position = "bottom", -- | top | left | right | horizontal | vertical
+			  ratio = 0.4
+			},
+		  },
+		  suggestion = {
+			enabled = true,
+			auto_trigger = false,
+			hide_during_completion = true,
+			debounce = 75,
+			trigger_on_accept = true,
+			keymap = {
+			  accept = "<M-l>",
+			  accept_word = false,
+			  accept_line = false,
+			  next = "<M-]>",
+			  prev = "<M-[>",
+			  dismiss = "<C-]>",
+			},
+		  },
+		  filetypes = {
+			yaml = false,
+			markdown = false,
+			help = false,
+			gitcommit = false,
+			gitrebase = false,
+			hgcommit = false,
+			svn = false,
+			cvs = false,
+			["."] = false,
+		  },
+		  auth_provider_url = nil, -- URL to authentication provider, if not "https://github.com/"
+		  logger = {
+			file = "/tmp/geoff.o.nvim.copilot-lua.log",
+			file_log_level = vim.log.levels.INFO,
+			print_log_level = vim.log.levels.WARN,
+			trace_lsp = "off", -- "off" | "messages" | "verbose"
+			trace_lsp_progress = false,
+			log_lsp_messages = false,
+		  },
+		  copilot_node_command = 'node', -- Node.js version must be > 20
+		  workspace_folders = {},
+		  copilot_model = "",
+		  root_dir = function()
+			return vim.fs.dirname(vim.fs.find(".git", { upward = true })[1])
+		  end,
+		  should_attach = function(_, _)
+			if not vim.bo.buflisted then
+			  -- logger.debug("not attaching, buffer is not 'buflisted'")
+			  return false
+			end
+
+			if vim.bo.buftype ~= "" then
+			  -- logger.debug("not attaching, buffer 'buftype' is " .. vim.bo.buftype)
+			  return false
+			end
+
+			return true
+		  end,
+		  server = {
+			type = "nodejs", -- "nodejs" | "binary"
+			custom_server_filepath = nil,
+		  },
+		  server_opts_overrides = {},
+		},
+	  }, -- for providers='copilot'
       {
         -- support for image pasting
         "HakonHarnes/img-clip.nvim",
@@ -233,6 +320,11 @@ require('lazy').setup({
                 ["ctrl-t"] = actions.file_tabedit,
                 ["alt-q"]  = actions.file_sel_to_qf,
                 ["alt-Q"]  = actions.file_sel_to_ll,
+--         ["ctrl-b"] = function(selected)
+--	           for _, file in ipairs(selected) do
+--	             vim.cmd('edit ' .. file)
+--	           end
+--	         end,
               }
           }
       })
