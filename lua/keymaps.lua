@@ -32,12 +32,56 @@ vim.keymap.set("", "<leader>g", function() require('fzf-lua').grep() end)
 map("", "gp", ":tabprevious<CR>")
 map("", "gn", ":tabnext<CR>")
 
--- lookup
--- TODO: add &filetype to the query
---   what is lua "echo"? to test interpolation?
---   is there a lua console in nvim?
---
-map('', "gl", ':silent !open "https://www.google.com/search?q=<c-r>=expand("<cword>")<cr>"<CR>')
+-- Function to get visual selection
+local function get_visual_selection()
+    local start_pos = vim.fn.getpos("'<")
+    local end_pos = vim.fn.getpos("'>")
+    local lines = vim.fn.getline(start_pos[2], end_pos[2])
+
+    if #lines == 0 then
+        return ""
+    end
+
+    -- Handle single line selection
+    if #lines == 1 then
+        return string.sub(lines[1], start_pos[3], end_pos[3])
+    end
+
+    -- Handle multi-line selection
+    lines[1] = string.sub(lines[1], start_pos[3])
+    lines[#lines] = string.sub(lines[#lines], 1, end_pos[3])
+
+    return table.concat(lines, " ")
+end
+
+-- Function to URL encode text
+local function url_encode(str)
+    if str then
+        str = string.gsub(str, "\n", "\r\n")
+        str = string.gsub(str, "([^%w _%%%-%.~])", function(c)
+            return string.format("%%%02X", string.byte(c))
+        end)
+        str = string.gsub(str, " ", "+")
+    end
+    return str
+end
+
+-- Function to search with Google
+local function google_search(text)
+    local filetype = vim.bo.filetype
+    local query = url_encode(text .. " " .. filetype)
+    local url = "https://www.google.com/search?q=" .. query
+    vim.fn.system("open '" .. url .. "'")
+end
+
+-- lookup - searches for current word with file type
+map('n', "gl", ':silent !open "https://www.google.com/search?q=<c-r>=expand("<cword>")<cr>+<c-r>=&filetype<cr>"<CR>')
+
+-- lookup - searches for selected text with file type in visual mode
+vim.keymap.set('v', 'gl', function()
+    local selection = get_visual_selection()
+    google_search(selection)
+end, { noremap = true, silent = true })
 
 -- TODO: open definition in new tab
 -- https://neovim.discourse.group/t/go-to-definition-in-new-tab/1552/3
