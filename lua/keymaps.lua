@@ -34,9 +34,12 @@ map("", "gn", ":tabnext<CR>")
 
 -- Function to get visual selection
 local function get_visual_selection()
+    -- Get the start and end positions of the visual selection
     local start_pos = vim.fn.getpos("'<")
     local end_pos = vim.fn.getpos("'>")
-    local lines = vim.fn.getline(start_pos[2], end_pos[2])
+
+    -- Get the lines in the selection
+    local lines = vim.api.nvim_buf_get_lines(0, start_pos[2] - 1, end_pos[2], false)
 
     if #lines == 0 then
         return ""
@@ -44,13 +47,18 @@ local function get_visual_selection()
 
     -- Handle single line selection
     if #lines == 1 then
-        return string.sub(lines[1], start_pos[3], end_pos[3])
+        local line = lines[1]
+        -- Extract the substring from start column to end column (1-indexed)
+        return string.sub(line, start_pos[3], end_pos[3])
     end
 
     -- Handle multi-line selection
+    -- First line: from start column to end
     lines[1] = string.sub(lines[1], start_pos[3])
+    -- Last line: from beginning to end column
     lines[#lines] = string.sub(lines[#lines], 1, end_pos[3])
 
+    -- Join all lines with spaces
     return table.concat(lines, " ")
 end
 
@@ -66,20 +74,87 @@ local function url_encode(str)
     return str
 end
 
+-- Function to check if text is a URL
+local function is_url(text)
+    -- Match common URL patterns (http, https, ftp, file, etc.)
+    return text:match("^https?://") or
+           text:match("^ftp://") or
+           text:match("^file://") or
+           text:match("^[%w%.%-]+%.%w+/") or  -- domain.com/path
+           text:match("^www%.%w+%.%w+")      -- www.example.com
+end
+
+-- Function to open URL directly
+local function open_url(url)
+    -- Add https:// prefix if missing for www. URLs
+    if url:match("^www%.") then
+        url = "https://" .. url
+    end
+    -- Properly escape the URL for shell execution
+    local escaped_url = string.gsub(url, "'", "'\"'\"'")
+    vim.fn.system("open '" .. escaped_url .. "'")
+end
+
 -- Function to search with Google
 local function google_search(text)
     local filetype = vim.bo.filetype
     local query = url_encode(text .. " " .. filetype)
     local url = "https://www.google.com/search?q=" .. query
-    vim.fn.system("open '" .. url .. "'")
+    -- Properly escape the URL for shell execution
+    local escaped_url = string.gsub(url, "'", "'\"'\"'")
+    vim.fn.system("open '" .. escaped_url .. "'")
 end
 
--- lookup - searches for current word with file type
-map('n', "gl", ':silent !open "https://www.google.com/search?q=<c-r>=expand("<cword>")<cr>+<c-r>=&filetype<cr>"<CR>')
+-- lookup - opens URL if cursor is on one, otherwise searches for current word with file type
+vim.keymap.set('n', 'gl', function()
+    -- First try to get the word under cursor
+    local word = vim.fn.expand("<cword>")
+
+    -- If the word looks like a URL, use it
+    if is_url(word) then
+        open_url(word)
+        return
+    end
+
+    -- If not, try to extract a longer URL from the current line
+    -- This handles cases where the cursor is on part of a URL that extends beyond word boundaries
+    local line = vim.fn.getline('.')
+    local col = vim.fn.col('.')
+
+    -- Look for URL patterns in the current line around the cursor position
+    for url in line:gmatch("https?://[%w%.%-_~:/?#%[%]@!$&'%(%)%*%+,;=%%]+") do
+        local start_pos, end_pos = line:find(url, 1, true)
+        if start_pos and end_pos and col >= start_pos and col <= end_pos then
+            open_url(url)
+            return
+        end
+    end
+
+    -- Check for www. URLs too
+    for url in line:gmatch("www%.[%w%.%-_~:/?#%[%]@!$&'%(%)%*%+,;=%%]+") do
+        local start_pos, end_pos = line:find(url, 1, true)
+        if start_pos and end_pos and col >= start_pos and col <= end_pos then
+            open_url(url)
+            return
+        end
+    end
+
+    -- If no URL found, do regular Google search
+    google_search(word)
+end, { noremap = true, silent = true })
 
 -- lookup - searches for selected text with file type in visual mode
 vim.keymap.set('v', 'gl', function()
-    local selection = get_visual_selection()
+    -- Use a much simpler approach: yank to a specific register and get it immediately
+    vim.cmd('normal! "zy')
+    local selection = vim.fn.getreg('z')
+
+    -- Clean up the selection
+    selection = string.gsub(selection, '\n', ' ')
+    selection = string.gsub(selection, '\r', ' ')
+    selection = string.gsub(selection, '%s+', ' ')
+    selection = string.gsub(selection, '^%s*(.-)%s*$', '%1')
+
     google_search(selection)
 end, { noremap = true, silent = true })
 
