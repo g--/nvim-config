@@ -241,4 +241,36 @@ require('lazy').setup({
  
 })
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "terraform", "hcl" },
+  callback = function()
+    vim.bo.expandtab = true
+    vim.bo.shiftwidth = 2
+    vim.bo.tabstop = 2
+  end,
+})
 
+vim.api.nvim_set_hl(0, "MixedIndent", { bg = "#3b2020" })
+
+local function update_mixed_indent()
+  if vim.w.mixed_indent_match then
+    pcall(vim.fn.matchdelete, vim.w.mixed_indent_match)
+    vim.w.mixed_indent_match = nil
+  end
+  if vim.bo.buftype ~= "" then return end
+  if vim.bo.expandtab then
+    vim.w.mixed_indent_match = vim.fn.matchadd("MixedIndent", "^\t\\+")
+  else
+    vim.w.mixed_indent_match = vim.fn.matchadd("MixedIndent", "^ \\+")
+  end
+end
+
+vim.api.nvim_create_autocmd("BufEnter", {
+  pattern = "*",
+  callback = update_mixed_indent,
+})
+
+vim.api.nvim_create_autocmd("OptionSet", {
+  pattern = "expandtab",
+  callback = update_mixed_indent,
+})
